@@ -117,6 +117,7 @@ Servicio con 4 controladores: catálogos, categorías, productos y reseñas.
 | GET | `/api/v1/productos/precio/rango?min=&max=` | Lista productos dentro de un rango de precio |
 | GET | `/api/v1/productos/precio/maximo?max=` | Lista productos bajo un precio máximo |
 | GET | `/api/v1/productos/precio/minimo?min=` | Lista productos sobre un precio mínimo |
+| DELETE | `/api/v1/productos/{id}` | Elimina un producto | 
 
 **Catálogos**
 
