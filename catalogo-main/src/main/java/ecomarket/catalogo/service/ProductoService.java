@@ -66,4 +66,12 @@ public class ProductoService {
         return productoRepository.findByMarca(marca);
     }
 
+    public boolean eliminarProducto(Long id) {
+        if (productoRepository.existsById(id)) {
+            productoRepository.deleteById(id);
+            return true;
+        }
+        return false;
+    }
+
 }
