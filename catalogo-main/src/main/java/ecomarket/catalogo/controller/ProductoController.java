@@ -114,4 +114,12 @@ public class ProductoController {
         }
         return new ResponseEntity<>(productos, HttpStatus.OK);
     }
+
+    @DeleteMapping("/{id}")
+        public ResponseEntity<Void> eliminarProducto(@PathVariable Long id) {
+            if (productoService.eliminarProducto(id)) {
+                return ResponseEntity.noContent().build();
+            }
+            return ResponseEntity.notFound().build();
+    }
 }
