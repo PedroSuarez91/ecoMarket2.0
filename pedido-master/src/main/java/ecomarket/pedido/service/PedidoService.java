@@ -38,15 +38,12 @@ public class PedidoService {
     @Value("${servicios.inventario.url}")
     private String inventarioUrl;
 
-    // Crea un pedido a partir de un carro. El idDireccion se elige aqui
-    // (entidad propia de pedido); se IGNORA el idDireccion que trae el carro.
     public Pedido crearPedidoDesdeCarro(Long idCarro, Long idDireccion) {
         String urlCarro = carroUrl + "/api/v1/carros/" + idCarro;
         CarroDTO carro = restTemplate.getForObject(urlCarro, CarroDTO.class);
         if (carro == null || carro.getItems() == null || carro.getItems().isEmpty()) {
-            return null; // carro inexistente o vacio
+            return null;
         }
-
         Pedido pedido = new Pedido();
         pedido.setIdUsuario(carro.getIdUsuario());
         pedido.setNombreCliente(carro.getNombreUsuario());
@@ -54,13 +51,10 @@ public class PedidoService {
         pedido.setCodigoCupon(carro.getCodigoCupon());
         pedido.setSubtotal(carro.getSubtotal());
         pedido.setTotal(carro.getTotal());
-
-        // Direccion: se toma de la entidad propia por su id (ignora la del carro)
         if (idDireccion != null) {
             Direccion direccion = direccionRepository.findById(idDireccion).orElse(null);
             pedido.setDireccionEnvio(direccion);
         }
-
         List<ItemPedido> items = new ArrayList<>();
         for (ItemCarroDTO itemCarro : carro.getItems()) {
             ItemPedido item = new ItemPedido();
@@ -71,27 +65,20 @@ public class PedidoService {
             item.setSubtotal(itemCarro.getSubtotal());
             item.setPedido(pedido);
             items.add(item);
-
             descontarStock(item.getIdProducto(), item.getCantidad());
         }
         pedido.setItems(items);
-
         pedido.setFechaPedido(LocalDate.now());
         pedido.setEstadoPedido(EstadoPedido.PENDIENTE);
         pedido.setMensajeConfirmacion("Pedido generado a partir del carro " + idCarro);
         pedido.setResumenCompra("Items: " + items.size()
                 + " | Subtotal: " + carro.getSubtotal()
                 + " | Total: " + carro.getTotal());
-
         Pedido guardado = pedidoRepository.save(pedido);
-
-        // Opcional: vaciar el carro confirmado. Descomenta si lo quieres.
-        // vaciarCarro(idCarro);
-
         return guardado;
     }
 
-    // Asigna o cambia la direccion de un pedido existente
+
     public Pedido actualizarDireccion(Long idPedido, Long idDireccion) {
         Pedido pedido = pedidoRepository.findById(idPedido).orElse(null);
         if (pedido == null) {
@@ -99,7 +86,7 @@ public class PedidoService {
         }
         Direccion direccion = direccionRepository.findById(idDireccion).orElse(null);
         if (direccion == null) {
-            return null; // la direccion no existe
+            return null; 
         }
         pedido.setDireccionEnvio(direccion);
         return pedidoRepository.save(pedido);
@@ -128,7 +115,6 @@ public class PedidoService {
         pedidoRepository.deleteById(id);
     }
 
-    // ---- helpers privados ----
 
     private void descontarStock(Long idProducto, Integer cantidad) {
         try {
@@ -140,12 +126,5 @@ public class PedidoService {
         }
     }
 
-    @SuppressWarnings("unused")
-    private void vaciarCarro(Long idCarro) {
-        try {
-            restTemplate.delete(carroUrl + "/api/v1/carros/" + idCarro);
-        } catch (Exception e) {
-            System.out.println("AVISO: no se pudo vaciar el carro " + idCarro + ": " + e.getMessage());
-        }
-    }
+
 }
